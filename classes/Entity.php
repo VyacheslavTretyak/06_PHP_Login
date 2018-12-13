@@ -46,7 +46,7 @@ class Entity
     //выполняет запрос
     public function execute(){
         $request = $this->requestSelect->getRequest();
-        echo "REQUEST: $request<br>";
+      //  echo "REQUEST: $request<br>";
         try {
             if ($request == null) {
                 throw new Exception("Empty request!");
@@ -65,12 +65,9 @@ class Entity
             echo $ex->getMessage();
         }
     }
-    public function getListObjects(){
-        return $this->objects;
-    }
     //создает объект из массива
     private function getObject(){
-        if(count($this->objects) ==0){
+        if(count($this->objects) == 0){
             return null;
         }
         $object = new stdClass();

@@ -29,7 +29,7 @@ class HomeController{
             ->execute();
 
         $countOnPage = 3;
-        $allPetitions = $entity->getListObjects();
+        $allPetitions = $entity->objects;
         $countPetition = count($allPetitions);
         $pages = ceil ( $countPetition / $countOnPage );
         $start = $countOnPage * ($page - 1);

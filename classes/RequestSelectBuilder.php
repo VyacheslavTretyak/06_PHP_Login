@@ -39,7 +39,7 @@ class RequestSelectBuilder
     public function setWhereFields($fields)
     {
         foreach ($fields as $key=>$val) {
-            $this->whereFields[] = "$this->lastTable.$key=$val";
+            $this->whereFields[] = "$this->lastTable.$key='$val'";
         }
     }
 

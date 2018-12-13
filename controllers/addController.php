@@ -21,6 +21,7 @@ class AddController{
         $subject = $_POST ['subject'];
         $body = $_POST ['body'];
         $active = 0;
+        /*
         $db = new PDO ('mysql:host=localhost;dbname=petitions_db', 'root', '', array(
             PDO::ATTR_PERSISTENT => true
         ));
@@ -34,6 +35,10 @@ class AddController{
             ':email' => $email
         ));
         $findEmail = $query->fetch();
+*/
+        $entity = new Entity('users');
+        $entity->select()->where(['email'=>$email])->execute();
+        $findEmail = $entity->object;
         if (!$findEmail) {
             $sql = "insert into users(id,email)
 							values (:id, :email);";
