@@ -4,42 +4,20 @@ class ConfirmationController{
     public function confirmAction(){
 
         $token = $_GET ['token'];
-        $db = new PDO ( 'mysql:host=localhost;dbname=petitions_db', 'root', '', array (
-            PDO::ATTR_PERSISTENT => true
-        ) );
-        $sql = "select *
-		from users
-		where id=:token";
-        $query = $db->prepare ( $sql, array (
-            PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-        ) );
-        $query->execute ( array (
-            ':token' => $token
-        ) );
-        $findEmail = $query->fetch ();
+        $user = new User();
+        $user->select()->where(['id'=>$token])->execute();
+        $findEmail = $user->object;
         if ($findEmail) {
-            $sql = "update users
-			set active = true
-			where id=:token";
-            $query = $db->prepare ( $sql, array (
-                PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-            ) );
-            $query->execute ( array (
-                ':token' => $token
-            ) );
+            $user->active = 1;
+            $user->save();
             if (isset ( $_GET ['id'] )) {
-                $sql = "insert into signatures (id_user, id_petition)
-				values (:id_user, :id_petition);";
-                $query = $db->prepare ( $sql, array (
-                    PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-                ) );
-                $query->execute ( array (
-                    ':id_user' => $token,
-                    ':id_petition' => $_GET ['id']
-                ) );
-
+                $sign = new Signature();
+                $sign->id_user = $token;
+                $sign->id_petition = $_GET ['id'];
+                $sign->save();
             }
             else {
+                $db = DB::GetInstance();
                 $sql = "update petitions
 			set active = true
 			where id_autor=:token";

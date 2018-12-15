@@ -9,6 +9,10 @@ function __autoload($class){
     if (file_exists ( $file)) {
         require_once ($file);
     }
+    $file = "classes/orm/$class.php";
+    if (file_exists ( $file)) {
+        require_once ($file);
+    }
 }
 
 $routing = new Routing();

@@ -1,7 +1,9 @@
 <?php
 
-class AddController{
-    public function showAction(){
+class AddController
+{
+    public function showAction()
+    {
         $view = new View('add');
 
         $layout = new View('layout');
@@ -9,10 +11,11 @@ class AddController{
         $layout->display();
     }
 
-    private function sendMail($token){
+    private function sendMail($token)
+    {
         $msg = "http://localhost/confirmation?token=$token";
-        mail ( "reg@petition.org", "Confirmation", $msg );
-        header ( "Location: http://localhost/info?info=We send confirmation email on your address!" );
+        mail("reg@petition.org", "Confirmation", $msg);
+        header("Location: http://localhost/info?info=We send confirmation email on your address!");
     }
 
     public function saveAction()
@@ -21,68 +24,34 @@ class AddController{
         $subject = $_POST ['subject'];
         $body = $_POST ['body'];
         $active = 0;
-        /*
-        $db = new PDO ('mysql:host=localhost;dbname=petitions_db', 'root', '', array(
-            PDO::ATTR_PERSISTENT => true
-        ));
-        $sql = "select *
-					from users
-					where email=:email;";
-        $query = $db->prepare($sql, array(
-            PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-        ));
-        $query->execute(array(
-            ':email' => $email
-        ));
-        $findEmail = $query->fetch();
-*/
-        $entity = new Entity('users');
-        $entity->select()->where(['email'=>$email])->execute();
-        $findEmail = $entity->object;
+        $user = new User();
+        $user->select()->where(['email' => $email])->execute();
+        $findEmail = $user->object;
         if (!$findEmail) {
-            $sql = "insert into users(id,email)
-							values (:id, :email);";
-            $query = $db->prepare($sql, array(
-                PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-            ));
             $token = hash('sha256', $email);
-            $query->execute(array(
-                ':id' => $token,
-                ':email' => $email
-            ));
+            $user->id = $token;
+            $user->email = $email;
+            $user->active = 0;
+            $user->save();
             $this->sendMail($token);
-        } else if (!$findEmail ['active']) {
-            $this->sendMail($findEmail ['id']);
+
+        } else if (!$findEmail->active) {
+            $this->sendMail($findEmail->id);
         } else {
             $active = 1;
         }
         if ($findEmail) {
-            $token = $findEmail ['id'];
+            $token = $findEmail->id;
         }
-
-        $sql = "select *
-						from petitions
-						where subject=:subject;";
-        $query = $db->prepare($sql, array(
-            PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-        ));
-        $query->execute(array(
-            ':subject' => $subject
-        ));
-        $findPetition = $query->fetch();
+        $petition = new Petition();
+        $petition->select()->where(['subject'=>$subject])->execute();
+        $findPetition = $petition->object;
         if (!$findPetition) {
-
-            $sql = "insert into petitions(id_autor, subject, body, active)
-							values (:autor, :subject, :body, :active);";
-            $query = $db->prepare($sql, array(
-                PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-            ));
-            $query->execute(array(
-                ':autor' => $token,
-                ':subject' => $subject,
-                ':body' => $body,
-                ':active' => $active
-            ));
+            $petition->id_autor = $token;
+            $petition->subject = $subject;
+            $petition->body = $body;
+            $petition->active = $active;
+            $petition->save();
             header("Location: http://localhost/info?info=The petition is saved!");
         } else {
             header("Location: http://localhost/info?info=The petition with this subject is exists!");

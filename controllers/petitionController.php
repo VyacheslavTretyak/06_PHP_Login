@@ -18,20 +18,20 @@ class PetitionController
     {
         ob_start();
         $id = $_GET['id'];
-        $db = new PDO ('mysql:host=localhost;dbname=petitions_db', 'root', '', array (PDO::ATTR_PERSISTENT => true));
-        $sql = "select p.*, u.email, count(s.id) as qty
-					from petitions as p
-					left join signatures as s on p.id = s.id_petition
-					left join users as u on p.id_autor = u.id
-					where p.id = :id
-					group by p.id";
-        $query = $db->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
-        $query->execute(array(':id'=>$id));
-        while($petition = $query->fetch()){
-            $subject = $petition['subject'];
-            $body = $petition['body'];
-            $count = $petition['qty'];
-            $email = $petition['email'];
+        $petition = new Petition();
+        $petition->select()
+            ->where(['id'=>$id])
+            ->group('id')
+            ->leftJoin('signatures', "id_petition", "id" )
+            ->count('id')
+            ->leftJoin('users',"id", "id_autor")
+            ->select('email')
+            ->execute();
+        do{
+            $subject = $petition->subject;
+            $body = $petition->body;
+            $count = $petition->count_id;
+            $email = $petition->object->users_email;
             echo "<div class='card'>
 					<div class='card-header'>
 						<div class='row'>
@@ -44,7 +44,7 @@ class PetitionController
 							<p class='card-text'>$body</p>							
 						</div>
 					</div>";
-        }
+        }while($petition->next());
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -59,51 +59,33 @@ class PetitionController
     public function getupAction(){
         $email= $_POST['email'];
         $idPetition = $_POST['id_petition'];
-        $db = new PDO ( 'mysql:host=localhost;dbname=petitions_db', 'root', '', array (
-            PDO::ATTR_PERSISTENT => true
-        ) );
-        $sql = "select *
-		from users		
-		where email = :email";
-        $query = $db->prepare ( $sql, array (
-            PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-        ) );
-        $query->execute ( array (
-            ':email' => $email
-        ) );
-        $findEmail = $query->fetch ();
+        $user = new User();
+        $user->select()
+            ->where(['email'=>$email])
+            ->execute();
+        $findEmail = $user->object;
         if(!$findEmail){
-            $sql = "insert into users(id,email)
-							values (:id, :email);";
-            $query = $db->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
             $token = hash('sha256', $email);
-            $query->execute(array(':id'=>$token, ':email'=>$email));
+            $user->id = $token;
+            $user->email = $email;
+            $user->save();
             $this->sendMail($token, $idPetition);
         }
-        else if(!$findEmail['active']){
-            $this->sendMail($findEmail['id'], $idPetition);
+        else if(!$findEmail->active){
+            $this->sendMail($findEmail->id, $idPetition);
         }else{
-            $token = $findEmail['id'];
-            $sql = "select *
-		from signatures
-		where id_user = :token and id_petition = :idPetition";
-            $query = $db->prepare ( $sql, array (
-                PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY
-            ) );
-            $query->execute ( array (
-                ':token' => $token,
-                ':idPetition' => $idPetition
-            ) );
-            $findSignatures = $query->fetch ();
+            $token = $findEmail->id;
+            $sign = new Signature();
+            $sign->select()
+                ->where(['id_user'=>$token, 'id_petition'=>$idPetition])
+                ->execute();
+            $findSignatures = $sign->object;
             if($findSignatures){
                 header("Location: http://localhost/info?info=You already get up!");
             }else{
-                $sql = "insert into signatures (id_user, id_petition)
-				values (:id_user, :id_petition);";
-                $sth = $db->prepare($sql);
-                $sth->bindValue(':id_user', $token);
-                $sth->bindValue(':id_petition', $idPetition);
-                $sth->execute();
+                $sign->id_user = $token;
+                $sign->id_petition = $idPetition;
+                $sign->save();
                 header ( "Location: http://localhost/petition?id=$idPetition");
             }
 

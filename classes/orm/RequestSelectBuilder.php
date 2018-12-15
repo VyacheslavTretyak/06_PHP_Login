@@ -45,7 +45,7 @@ class RequestSelectBuilder
 
     public function setCountField($fieldName)
     {
-        $this->selectFields[] = "count($this->lastTable.$fieldName) as count_$fieldName";
+        $this->selectFields[] = " count($this->lastTable.$fieldName) as count_$fieldName ";
     }
 
     public function setGroupFields($field)
@@ -55,46 +55,19 @@ class RequestSelectBuilder
 
     public function getRequest()
     {
-        $request = "SELECT ";
-        $countSelectFields = count($this->selectFields);
-        $count = $countSelectFields;
-        foreach ($this->selectFields as $val) {
-            $request .= "$val ";
-            if (--$count > 0) {
-                $request .= ", ";
-            }
+        $request = " SELECT ";
+        $request.=implode(', ', $this->selectFields);
+        $request .= " FROM $this->table ";
+        foreach ($this->leftJoinFields as $val) {
+            $request .= " LEFT JOIN $val[0] ON $val[0].$val[2] = $val[1].$val[3] ";
         }
-
-        $request .= "FROM $this->table ";
-        $countLeftJoin = count($this->leftJoinFields);
-        if ($countLeftJoin > 0) {
-            foreach ($this->leftJoinFields as $val) {
-                $request .= "LEFT JOIN $val[0] ON $val[0].$val[2] = $val[1].$val[3] ";
-
-            }
+        if (count($this->whereFields) > 0) {
+            $request .= " WHERE ";
+            $request.=implode(' AND ', $this->whereFields);
         }
-
-        $countWhereFields = count($this->whereFields);
-        if ($countWhereFields > 0) {
-            $request .= "WHERE ";
-            $count = $countWhereFields;
-            foreach ($this->whereFields as $val) {
-                $request .= "$val ";
-                if (--$count > 0) {
-                    $request .= ", ";
-                }
-            }
-        }
-        $countGroupFields = count($this->groupFields);
-        if ($countGroupFields > 0) {
-            $request .= "GROUP BY ";
-            $count = $countGroupFields;
-            foreach ($this->groupFields as $key => $val) {
-                $request .= "$val ";
-                if (--$count > 0) {
-                    $request .= ", ";
-                }
-            }
+        if (count($this->groupFields) > 0) {
+            $request .= " GROUP BY ";
+            $request.=implode(', ', $this->groupFields);
         }
         $request .= ";";
         return $request;

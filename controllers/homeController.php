@@ -18,7 +18,7 @@ class HomeController{
         else {
             $page = $_GET ['page'];
         }
-        $entity = new Entity('petitions');
+        $entity = new Petition();
         $entity->select()
             ->group('id')
             ->where(['active'=>1])
@@ -37,7 +37,7 @@ class HomeController{
             $petition = $allPetitions [$i + $start];
             $subject = $petition ['subject'];
             $body = $petition ['body'];
-            $count = $petition ['qty'];
+            $count = $petition ['count_id'];
             $email = $petition['users_email'];
             if ($i + $start < $countPetition) {
                 echo "<div class='card'>
