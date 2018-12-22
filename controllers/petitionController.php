@@ -32,18 +32,7 @@ class PetitionController
             $body = $petition->body;
             $count = $petition->count_id;
             $email = $petition->object->users_email;
-            echo "<div class='card'>
-					<div class='card-header'>
-						<div class='row'>
-						  <div class='col-auto mr-auto'>$subject</div>
-							<div class='col-auto'>[$email]</div>
-						  <div class='col-auto'>Count: $count</div>
-						</div>
-					</div>
-						<div class='card-body'>
-							<p class='card-text'>$body</p>							
-						</div>
-					</div>";
+            echo "";
         }while($petition->next());
         $content = ob_get_contents();
         ob_end_clean();
