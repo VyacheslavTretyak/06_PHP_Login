@@ -2,9 +2,16 @@
     <div class="row">
         <div class="col-12">
             <h1>Petition</h1>
-            <form action="add">
-                <input class="btn btn-primary" type="submit" value="Add petition">
-            </form>
+            <?php if($sigin){?>
+                <form action="add">
+                    <input class="btn btn-primary" type="submit" value="Add petition">
+                    <a href='login/logout' class='btn btn-info'>Log Out</a>
+                </form>
+            <?php } else {?>
+                <form action="login">
+                    <input class="btn btn-primary" type="submit" value="Login">
+                </form>
+            <?php } ?>
             <?php foreach ($petitions as $val){?>
                     <div class='card'>
 					<div class='card-header'>
@@ -16,7 +23,9 @@
 					</div>
 						<div class='card-body'>
 							<p class='card-text'><?=$val->body?></p>
-                            <a href='petition?id=<?=$val->id?>' class='btn btn-info'>Get Up</a>
+                            <?php if($sigin){?>
+                                <a href='petition?id=<?=$val->id?>' class='btn btn-info'>Get Up</a>
+                            <?php } ?>
                         </div>
 					</div>
             <?php } ?>

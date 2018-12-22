@@ -5,6 +5,7 @@ class User extends Entity
     public $id;
     public $email;
     public $active;
+    public $password;
     public function __construct()
     {
         parent::__construct(self::TABLE);

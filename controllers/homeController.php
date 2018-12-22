@@ -2,7 +2,16 @@
 
 class HomeController{
     public function showAction(){
+        $session = new Session();
+        if(isset($_COOKIE['session'])){
+            $session->select()
+                ->where(['id'=>$_COOKIE['session'], 'hash'=>$_COOKIE['hash']])
+                ->execute();
+        }
+        $sigin = $session->object != null;
+
         $home = new View('home');
+        $home->assign('sigin', $sigin);
         if (! isset ( $_GET ['page'] )) {
             $page = 1;
         }

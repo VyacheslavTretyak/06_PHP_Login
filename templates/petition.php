@@ -1,7 +1,18 @@
 <div class="container">
     <div class = "row">
         <div class = "col-12">
-            <?= $content?>
+            <div class='card'>
+                <div class='card-header'>
+                    <div class='row'>
+                        <div class='col-auto mr-auto'><?=$petition->subject?></div>
+                        <div class='col-auto'>[<?=$petition->users_email?>]</div>
+                        <div class='col-auto'>Count: <?=$petition->count_id?></div>
+                    </div>
+                </div>
+                <div class='card-body'>
+                    <p class='card-text'><?=$petition->body?></p>
+                </div>
+            </div>
             <form action="petition/getup" method="post">
                 <div class="form-group">
                     <label for="email">Email address</label>

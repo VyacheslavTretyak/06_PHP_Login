@@ -5,18 +5,9 @@ class PetitionController
 {
     public function showAction(){
         $home = new View('petition');
-        $content = $this->getContent();
-        $home->assign('content', $content);
+
         $home->assign('id', $_GET['id']);
 
-        $layout = new View('layout');
-        $layout->import('content', $home);
-        $layout->display();
-    }
-
-    private function getContent()
-    {
-        ob_start();
         $id = $_GET['id'];
         $petition = new Petition();
         $petition->select()
@@ -28,15 +19,12 @@ class PetitionController
             ->select('email')
             ->execute();
         do{
-            $subject = $petition->subject;
-            $body = $petition->body;
-            $count = $petition->count_id;
-            $email = $petition->object->users_email;
-            echo "";
+            $home->assign('petition', $petition);
         }while($petition->next());
-        $content = ob_get_contents();
-        ob_end_clean();
-        return $content;
+
+        $layout = new View('layout');
+        $layout->import('content', $home);
+        $layout->display();
     }
 
     private function sendMail($token, $idPetition){
